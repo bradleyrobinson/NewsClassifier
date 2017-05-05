@@ -15,7 +15,7 @@ try:
         description VARCHAR(1000),
         date DATETIME,
         bias VARCHAR(20),
-        PRIMARY KEY (id) """
+        PRIMARY KEY (id))"""
         cursor.execute(sql)
         connection.commit()
 finally:
