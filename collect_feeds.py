@@ -1,3 +1,4 @@
+import dbconfig
 import pymysql
 import pandas as pd
 import feedparser
@@ -42,7 +43,7 @@ class DBHelper(object):
                                passwd=dbconfig.db_password,
                                db=database)
 
-    def _insert_values(self, title, description, date, bias):
+    def _insert_values(self, title, description, bias):
         """
         
         :param title: 
@@ -54,7 +55,7 @@ class DBHelper(object):
         try:
             with self.connection.cursor() as cursor:
                 query = 'INSERT INTO feed_stories(title, description, bias) VALUES ({title}, {description}, ' \
-                        '{bias})'.format(title=title, description=description, date=date, bias=bias)
+                        '{bias})'.format(title=title, description=description, bias=bias)
                 cursor.execute(query)
                 self.connection.commit()
         except:
@@ -89,7 +90,7 @@ class DBHelper(object):
         feeds_urls = biased_feeds[bias]
         feeds_parsed = {page: feedparser.parse(feed) for page, feed in feeds_urls.items()}
         if not articles_parsed:
-            articles_parsed = {"title": [], "description": [], "page": [], "bias": []}
+            articles_parsed = {"title": [], "description": [], "bias": []}
         for key, page_content in feeds_parsed.items():
             for article in page_content['entries']:
                 title = self._clean_text(article["title"])
@@ -97,7 +98,6 @@ class DBHelper(object):
                     description = self._clean_text(article["description"])
                     articles_parsed["title"].append(title)
                     articles_parsed["description"].append(description)
-                    articles_parsed["page"].append(key)
                     articles_parsed["bias"].append(bias)
         return articles_parsed
 
@@ -114,21 +114,19 @@ class DBHelper(object):
             description = article_dict['description'][i]
             bias = article_dict['bias'][i]
             self._insert_values(title, description, bias)
-        pass
 
     def update_feed(self):
         try:
-            with self.connection.cursor() as cursor:
-                df = pd.read_sql_query('SELECT * FROM feed_stories', cursor)
-                new_articles = self._get_feeds('conservative', df.to_dict('list'))
-                new_articles = self._get_feeds('liberal', new_articles)
-                self.update_sql(new_articles)
+            df = pd.read_sql_query('SELECT * FROM feed_stories', self.connection)
+            new_articles = self._get_feeds('conservative', df.to_dict('list'))
+            new_articles = self._get_feeds('liberal', new_articles)
+            self.update_sql(new_articles)
 
         finally:
             self.connection.close()
-        pass
+        
 
 
 if __name__ == '__main__':
-    DBHelper()
-    DBHelper.update_feed()
+    db = DBHelper()
+    db.update_feed()
