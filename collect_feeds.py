@@ -1,3 +1,4 @@
+import dbconfig
 import pymysql
 import pandas as pd
 import feedparser
