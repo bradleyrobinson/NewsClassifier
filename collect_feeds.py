@@ -127,3 +127,8 @@ class DBHelper(object):
         finally:
             self.connection.close()
         pass
+
+
+if __name__ == '__main__':
+    DBHelper()
+    DBHelper.update_feed()
