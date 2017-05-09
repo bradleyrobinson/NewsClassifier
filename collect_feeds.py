@@ -91,7 +91,7 @@ class DBHelper(object):
         feeds_parsed = {page: feedparser.parse(feed) for page, feed in feeds_urls.items()}
         if not articles_parsed:
             articles_parsed = {"title": [], "description": [], "bias": []}
-        for key, page_content in feeds_parsed.items():
+        for _, page_content in feeds_parsed.items():
             for article in page_content['entries']:
                 title = self._clean_text(article["title"])
                 if title not in articles_parsed['title']:
@@ -99,13 +99,13 @@ class DBHelper(object):
                     articles_parsed["title"].append(title)
                     articles_parsed["description"].append(description)
                     articles_parsed["bias"].append(bias)
+        print(articles_parsed)
         return articles_parsed
 
     def update_sql(self, article_dict):
         """
-        
         Parameters:
-            article_dict: 
+            article_dict: a dictionary
         Returns:
             None
         """
