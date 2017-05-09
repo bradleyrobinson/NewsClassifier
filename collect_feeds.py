@@ -57,12 +57,12 @@ class DBHelper(object):
         """
         try:
             with self.connection.cursor() as cursor:
-                query = 'INSERT INTO feed_stories(title, description, bias) VALUES ({title}, {description}, ' \
+                query = 'INSERT INTO feed_stories(title, description, bias) VALUES ({title}, "{description}", ' \
                         '{bias})'.format(title=title, description=description, bias=bias)
                 cursor.execute(query)
                 print("executed!")
                 self.connection.commit()
-                
+
         except Exception as e:
             print(e)
             self.connection.rollback()
