@@ -14,7 +14,7 @@ def get_data():
                                      passwd=dbconfig.db_password,
                                      db='news')
         articles = pd.read_sql_query('SELECT * FROM feed_stories', connection)
-        print(articles.head())
+        print(articles.head(), '\n', articles.shape)
     finally:
         connection.close()
 

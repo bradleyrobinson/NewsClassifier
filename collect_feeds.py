@@ -57,8 +57,8 @@ class DBHelper(object):
         """
         try:
             with self.connection.cursor() as cursor:
-                query = 'INSERT INTO feed_stories(title, description, bias) VALUES ({title}, "{description}", ' \
-                        '{bias})'.format(title=title, description=description, bias=bias)
+                query = 'INSERT INTO feed_stories(title, description, bias) VALUES (\'{title}\', \'{description}\', ' \
+                        '\'{bias}\')'.format(title=title, description=description, bias=bias)
                 cursor.execute(query)
                 print("executed!")
                 self.connection.commit()
@@ -102,7 +102,9 @@ class DBHelper(object):
             for article in page_content['entries']:
                 title = self._clean_text(article["title"])
                 if title not in articles_parsed['title']:
-                    description = self._clean_text(article["description"])
+                    description = self._clean_text(article["description"]
+                    if len(description) > 1000:
+                        description = description[:999]
                     articles_parsed["title"].append(title)
                     articles_parsed["description"].append(description)
                     articles_parsed["bias"].append(bias)
