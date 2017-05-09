@@ -1,9 +1,9 @@
+from bs4 import BeautifulSoup
 import dbconfig
+import feedparser
 import pymysql
 import pandas as pd
-import feedparser
 import re
-from bs4 import BeautifulSoup
 
 biased_feeds = {
     'conservative': {
@@ -37,39 +37,45 @@ biased_feeds = {
 
 
 class DBHelper(object):
+    """
+    A class that helps create database stuff. Will be renamed, this is just a placeholder.
+    """
     def __init__(self, database="news"):
         self.connection = pymysql.connect(host='localhost',
-                               user=dbconfig.db_user,
-                               passwd=dbconfig.db_password,
-                               db=database)
+                                          user=dbconfig.db_user,
+                                          passwd=dbconfig.db_password,
+                                          db=database)
 
     def _insert_values(self, title, description, bias):
         """
+        Parameters:
+            title: str, Name of the article
+            description: str, more detailed description
+            bias: str, 'conservative' or 'liberal'
         
-        :param title: 
-        :param description: 
-        :param date: 
-        :param bias: 
-        :return: 
+        return: None
         """
         try:
             with self.connection.cursor() as cursor:
                 query = 'INSERT INTO feed_stories(title, description, bias) VALUES ({title}, {description}, ' \
                         '{bias})'.format(title=title, description=description, bias=bias)
                 cursor.execute(query)
+                print("executed!")
                 self.connection.commit()
         except:
+            print("not committed!")
             self.connection.rollback()
 
     def _clean_text(self, text):
         """
-            Takes feed strings and removes unneeded information, such as html content and extra characters
+        Takes feed strings and removes unneeded information, such as html content and extra 
+        characters.
 
-            Parameters:
-                text:
+        Parameters:
+            text: str, text to be cleaned
 
-            Returns:
-                 str: lower-cased version of the feed
+        Returns:
+            str: lower-cased version of the feed
             """
         soup = BeautifulSoup(text, 'lxml')
         text_only = soup.text
@@ -82,10 +88,10 @@ class DBHelper(object):
         """
         Goes through the given feed (bias) and searches for new content
         Parameters:
-            bias: 
-            articles_parsed: 
-        
+            bias: str, 'conservative' or 'liberal'
+            articles_parsed:         
         Returns: 
+            dict: includes information about the feeds obtained
         """
         feeds_urls = biased_feeds[bias]
         feeds_parsed = {page: feedparser.parse(feed) for page, feed in feeds_urls.items()}
@@ -99,7 +105,6 @@ class DBHelper(object):
                     articles_parsed["title"].append(title)
                     articles_parsed["description"].append(description)
                     articles_parsed["bias"].append(bias)
-        print(articles_parsed)
         return articles_parsed
 
     def update_sql(self, article_dict):
@@ -116,15 +121,17 @@ class DBHelper(object):
             self._insert_values(title, description, bias)
 
     def update_feed(self):
+        """
+        Takes from dictionary of feeds and updates the sql database.
+        """
         try:
-            df = pd.read_sql_query('SELECT * FROM feed_stories', self.connection)
-            new_articles = self._get_feeds('conservative', df.to_dict('list'))
+            news_df = pd.read_sql_query('SELECT * FROM feed_stories', self.connection)
+            new_articles = self._get_feeds('conservative', news_df.to_dict('list'))
             new_articles = self._get_feeds('liberal', new_articles)
             self.update_sql(new_articles)
 
         finally:
             self.connection.close()
-        
 
 
 if __name__ == '__main__':
