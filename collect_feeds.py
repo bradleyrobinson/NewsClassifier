@@ -102,7 +102,7 @@ class DBHelper(object):
             for article in page_content['entries']:
                 title = self._clean_text(article["title"])
                 if title not in articles_parsed['title']:
-                    description = self._clean_text(article["description"]
+                    description = self._clean_text(article["description"])
                     if len(description) > 1000:
                         description = description[:999]
                     articles_parsed["title"].append(title)
