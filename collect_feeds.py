@@ -62,8 +62,9 @@ class DBHelper(object):
                 cursor.execute(query)
                 print("executed!")
                 self.connection.commit()
-        except:
-            print("not committed!")
+                
+        except Exception as e:
+            print(e)
             self.connection.rollback()
 
     def _clean_text(self, text):
