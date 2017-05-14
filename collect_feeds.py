@@ -52,7 +52,7 @@ class DBHelper(object):
             title: str, Name of the article
             description: str, more detailed description
             bias: str, 'conservative' or 'liberal'
-        
+
         return: None
         """
         try:
@@ -88,14 +88,16 @@ class DBHelper(object):
         Goes through the given feed (bias) and searches for new content
         Parameters:
             bias: str, 'conservative' or 'liberal'
-            articles_parsed:         
-        Returns: 
+            articles_parsed: dictionary with the articles that are in
+                             the db
+        Returns:
             dict: includes information about the feeds obtained
         """
         feeds_urls = biased_feeds[bias]
         feeds_parsed = {page: feedparser.parse(feed) for page, feed in feeds_urls.items()}
+        new_articles = {"title": [], "description": [], "bias": []}
         if not articles_parsed:
-            articles_parsed = {"title": [], "description": [], "bias": []}
+            articles_parsed = new_articles
         for _, page_content in feeds_parsed.items():
             for article in page_content['entries']:
                 title = self._clean_text(article["title"])
@@ -103,10 +105,10 @@ class DBHelper(object):
                     description = self._clean_text(article["description"])
                     if len(description) > 1000:
                         description = description[:999]
-                    articles_parsed["title"].append(title)
-                    articles_parsed["description"].append(description)
-                    articles_parsed["bias"].append(bias)
-        return articles_parsed
+                    new_articles["title"].append(title)
+                    new_articles["description"].append(description)
+                    new_articles["bias"].append(bias)
+        return new_articles
 
     def update_sql(self, article_dict):
         """
