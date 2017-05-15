@@ -130,6 +130,7 @@ class DBHelper(object):
         try:
             news_df = pd.read_sql_query('SELECT * FROM feed_stories', self.connection)
             new_articles = self._get_feeds('conservative', news_df.to_dict('list'))
+            self.update_sql(new_articles)
             new_articles = self._get_feeds('liberal', new_articles)
             self.update_sql(new_articles)
 
