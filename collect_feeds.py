@@ -41,10 +41,9 @@ class DBHelper(object):
     A class that helps create database stuff. Will be renamed, this is just a placeholder.
     """
     def __init__(self, database="news"):
-        self.connection = pymysql.connect(host='localhost',
-                                          user=dbconfig.db_user,
-                                          passwd=dbconfig.db_password,
-                                          db=database)
+        self.connection = None
+        self.open_connection()
+        self.old_df = None
 
     def _insert_values(self, title, description, bias):
         """
@@ -123,15 +122,32 @@ class DBHelper(object):
             bias = article_dict['bias'][i]
             self._insert_values(title, description, bias)
 
+    def close_connection(self):
+        self.connection.close()
+
+    def open_connection(self):
+        self.connection = pymysql.connect(host='localhost',
+                                          user=dbconfig.db_user,
+                                          passwd=dbconfig.db_password,
+                                          db="news")
+
+    def get_old_df(self):
+        self.old_df = pd.read_sql_query('SELECT * FROM feed_stories', self.connection)
+        return self.old_df
+
+    def get_connection(self):
+        return self.connection
+
     def update_feed(self):
         """
         Takes from dictionary of feeds and updates the sql database.
         """
         try:
-            news_df = pd.read_sql_query('SELECT * FROM feed_stories', self.connection)
-            new_articles = self._get_feeds('conservative', news_df.to_dict('list'))
+            self.get_old_df()
+            old_dict = self.old_df.to_dict('list')
+            new_articles = self._get_feeds('conservative', old_dict)
             self.update_sql(new_articles)
-            new_articles = self._get_feeds('liberal', new_articles)
+            new_articles = self._get_feeds('liberal', old_dict)
             self.update_sql(new_articles)
 
         finally:
