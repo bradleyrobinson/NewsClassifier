@@ -19,6 +19,7 @@ def main():
     setup_db.setup_db(dbhelper.get_connection())
     dbhelper.open_connection()
     dbhelper.update_sql(old_df.to_dict('list'))
+    dbhelper.close_connection()
 
 
 if __name__ == "__main__":
